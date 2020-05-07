@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using QuotesRestAPI.Service;
+using QuotesRestAPI.Service.Implementation;
 
 namespace QuotesRestAPI
 {
@@ -16,6 +19,14 @@ namespace QuotesRestAPI
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
+            // Swagger
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+            });
+
+            services.AddSingleton<IDataStorage, DataStorage>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -28,12 +39,12 @@ namespace QuotesRestAPI
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
+
+            //Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Quote API");
             });
         }
     }
