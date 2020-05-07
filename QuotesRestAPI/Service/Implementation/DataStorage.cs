@@ -8,34 +8,62 @@ namespace QuotesRestAPI.Service.Implementation
 {
     public class DataStorage : IDataStorage
     {
-        public void Creat(QuoteModel quote)
+        public List<QuoteModel> quotes = new List<QuoteModel>();
+        private int id;
+        public void Create(QuoteModel quote)
         {
-            throw new NotImplementedException();
+            var newQuote = new QuoteModel
+            {
+                Id = ++id,
+                Author = quote.Author,
+                Quote = quote.Quote,
+                Category = quote.Category,
+                CreatedDate = DateTime.Now
+            };
+            quotes.Add(newQuote);
         }
 
-        public void Delete(int id)
+        public Boolean Delete(int id)
         {
-            throw new NotImplementedException();
+            var quoteToRemove = quotes.Single(r => r.Id == id);
+            if (quoteToRemove == null)
+                return false;
+            quotes.Remove(quoteToRemove);
+            return true;
         }
 
-        public void Edit(int id, QuoteModel quoteModel)
+        public Boolean Edit(int id, QuoteModel quote)
         {
-            throw new NotImplementedException();
+            var quoteIndex = quotes.FindIndex(p => p.Id == id);
+            if (quoteIndex == null)
+                return false;
+            quote.Id = id;
+            quote.CreatedDate= quotes[quoteIndex].CreatedDate;
+            quotes[quoteIndex] = quote;
+            return true;
         }
 
         public List<QuoteModel> Get()
         {
-            throw new NotImplementedException();
+            return quotes;
         }
 
         public List<QuoteModel> GetByCategory(string category)
         {
-            throw new NotImplementedException();
+            var quote = quotes.Where(q => q.Category == category).ToList();
+            return quote;
         }
 
-        public QuoteModel GetRandomQuote()
+        public QuoteModel RandomQuote
         {
-            throw new NotImplementedException();
+            get
+            {
+                if (quotes.Count() == 0)
+                    return null;
+                Random random = new Random();
+                var quoteIndex = random.Next(quotes.Count());
+                return quotes[quoteIndex];
+            }
         }
 
         public void Worker()

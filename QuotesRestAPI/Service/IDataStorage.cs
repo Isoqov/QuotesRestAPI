@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace QuotesRestAPI.Service
 {
-    interface IDataStorage
+    public interface IDataStorage
     {
-        void Edit(int id, QuoteModel quoteModel);
-        void Delete(int id);
+        public Boolean Edit(int id, QuoteModel quote);
+        public Boolean Delete(int id);
         public List<QuoteModel> Get();
         public List<QuoteModel> GetByCategory(string category);
-        public QuoteModel GetRandomQuote();
-        void Creat(QuoteModel quote);
+        public QuoteModel RandomQuote { get; }
+        void Create(QuoteModel quote);
         void Worker();
     }
 }
