@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,8 +13,6 @@ namespace QuotesRestAPI
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 
         public Startup(IConfiguration configuration)
         {
@@ -29,6 +24,14 @@ namespace QuotesRestAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            //Hangfire
+            services.AddHangfire(config =>
+            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170).
+            UseSimpleAssemblyNameTypeSerializer().
+            UseDefaultTypeSerializer()
+            .UseMemoryStorage());
+
             // Swagger
             services.AddSwaggerGen(c =>
             {
@@ -38,7 +41,6 @@ namespace QuotesRestAPI
             services.AddSingleton<IDataStorage, DataStorage>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -56,6 +58,15 @@ namespace QuotesRestAPI
             {
                 endpoints.MapControllers();
             });
+
+            //HangFire dashboard: I used this to check the worker. To open the hangfire dashbor go to https://your_localhot/hangfire
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
+
+            //calling worker every 5 minutes 
+            RecurringJob.AddOrUpdate<IDataStorage>(
+            dataStorage => dataStorage.Worker(),
+            Cron.MinuteInterval(5));
 
             //Swagger
             app.UseSwagger();

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace QuotesRestAPI.Service.Implementation
 {
@@ -25,9 +24,12 @@ namespace QuotesRestAPI.Service.Implementation
 
         public Boolean Delete(int id)
         {
-            var quoteToRemove = quotes.Single(r => r.Id == id);
-            if (quoteToRemove == null)
+            //Checking if the element exist in the list
+            var quoteIndex = quotes.FindIndex(p => p.Id == id);
+            if (quoteIndex < 0)
                 return false;
+
+            var quoteToRemove = quotes.Single(r => r.Id == id);
             quotes.Remove(quoteToRemove);
             return true;
         }
@@ -35,10 +37,10 @@ namespace QuotesRestAPI.Service.Implementation
         public Boolean Edit(int id, QuoteModel quote)
         {
             var quoteIndex = quotes.FindIndex(p => p.Id == id);
-            if (quoteIndex == null)
+            if (quoteIndex < 0)
                 return false;
             quote.Id = id;
-            quote.CreatedDate= quotes[quoteIndex].CreatedDate;
+            quote.CreatedDate = quotes[quoteIndex].CreatedDate;
             quotes[quoteIndex] = quote;
             return true;
         }
@@ -68,7 +70,15 @@ namespace QuotesRestAPI.Service.Implementation
 
         public void Worker()
         {
-            throw new NotImplementedException();
+            if (quotes.Count() != 0)
+            {
+                foreach (var quote in quotes)
+                {
+                    var time = DateTime.Now.AddHours(-1);
+                    if(quote.CreatedDate < time)
+                        quotes.Remove(quote);
+                }
+            }
         }
     }
 }
